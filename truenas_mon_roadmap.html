@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrueNAS Mon - Roadmap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #131314;
+      --bg-secondary: #1a1a1b;
+      --bg-tertiary: #232325;
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-dark: #4f46e5;
+      --text-primary: #faf9f0;
+      --text-secondary: rgba(250, 249, 240, 0.7);
+      --text-muted: rgba(250, 249, 240, 0.5);
+      --border: rgba(250, 249, 240, 0.1);
+      --success: #4ade80;
+      --warning: #fbbf24;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4.25rem;
+      background: rgba(19, 19, 20, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(1.5rem, 5vw, 5rem);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 600;
+      font-size: 1.125rem;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 2rem;
+      height: 2rem;
+      background: var(--accent);
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 1.25rem;
+      height: 1.25rem;
+      color: white;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9375rem;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: clamp(6rem, 15vh, 10rem) clamp(1.5rem, 5vw, 5rem);
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 2rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      width: fit-content;
+    }
+
+    .hero-badge-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      background: var(--success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      max-width: 900px;
+    }
+
+    .hero h1 .accent {
+      color: var(--accent);
+    }
+
+    .hero p {
+      font-size: clamp(1.125rem, 2vw, 1.375rem);
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin-bottom: 2.5rem;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-light);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-secondary);
+      border-color: var(--text-muted);
+    }
+
+    /* Sections */
+    section {
+      padding: clamp(4rem, 10vh, 8rem) clamp(1.5rem, 5vw, 5rem);
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      margin-bottom: 4rem;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .section-description {
+      font-size: 1.125rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+    }
+
+    /* Phase Cards */
+    .phases {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .phase-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+
+    .phase-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .phase-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .phase-number {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .phase-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .phase-description {
+      color: var(--text-secondary);
+      font-size: 0.9375rem;
+    }
+
+    .phase-status {
+      padding: 0.375rem 0.75rem;
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-current {
+      background: rgba(74, 222, 128, 0.15);
+      color: var(--success);
+    }
+
+    .status-next {
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--warning);
+    }
+
+    .status-planned {
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
+    }
+
+    .phase-features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .feature-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 0.125rem;
+    }
+
+    .feature-text {
+      font-size: 0.9375rem;
+    }
+
+    .feature-priority {
+      font-size: 0.6875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-left: 0.5rem;
+    }
+
+    /* Timeline */
+    .timeline-section {
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin: 0;
+      max-width: none;
+      padding: clamp(4rem, 10vh, 8rem) clamp(1.5rem, 5vw, 5rem);
+    }
+
+    .timeline-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .timeline {
+      display: flex;
+      overflow-x: auto;
+      gap: 0;
+      padding: 2rem 0;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .timeline-item {
+      flex: 0 0 auto;
+      width: 200px;
+      text-align: center;
+      position: relative;
+    }
+
+    .timeline-item::after {
+      content: '';
+      position: absolute;
+      top: 1rem;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: var(--border);
+    }
+
+    .timeline-item:last-child::after {
+      display: none;
+    }
+
+    .timeline-dot {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      border: 2px solid var(--border);
+      margin: 0 auto 1rem;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timeline-dot.active {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .timeline-dot.active svg {
+      color: white;
+    }
+
+    .timeline-dot svg {
+      width: 1rem;
+      height: 1rem;
+      color: var(--text-muted);
+    }
+
+    .timeline-label {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline-date {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-top: 4rem;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.9375rem;
+      color: var(--text-secondary);
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem clamp(1.5rem, 5vw, 5rem);
+      text-align: center;
+    }
+
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9375rem;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-copyright {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .phase-header {
+        flex-direction: column;
+        gap: 1rem;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-in {
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.2s; opacity: 0; }
+    .delay-3 { animation-delay: 0.3s; opacity: 0; }
+    .delay-4 { animation-delay: 0.4s; opacity: 0; }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <a href="#" class="logo">
+      <div class="logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <ellipse cx="12" cy="5" rx="9" ry="3" />
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+        </svg>
+      </div>
+      TrueNAS Mon
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#roadmap">Roadmap</a>
+      <a href="#timeline">Timeline</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge animate-in delay-1">
+      <span class="hero-badge-dot"></span>
+      <span>Now in active development</span>
+    </div>
+    <h1 class="animate-in delay-2">
+      The future of <span class="accent">TrueNAS</span> fleet monitoring
+    </h1>
+    <p class="animate-in delay-3">
+      A comprehensive monitoring solution for MSPs and homelab enthusiasts.
+      Real-time visibility, predictive insights, and seamless alerting from a single dashboard.
+    </p>
+    <div class="hero-buttons animate-in delay-4">
+      <a href="#roadmap" class="btn btn-primary">
+        View Roadmap
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Roadmap -->
+  <section id="roadmap">
+    <div class="section-header">
+      <span class="section-label">Roadmap</span>
+      <h2 class="section-title">What we're building</h2>
+      <p class="section-description">
+        Our development roadmap is driven by community feedback and real-world MSP needs.
+      </p>
+    </div>
+
+    <div class="phases">
+      <!-- Phase 1 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <div>
+            <div class="phase-number">Phase 1</div>
+            <h3 class="phase-title">Core Monitoring</h3>
+            <p class="phase-description">Foundation dashboard with real-time system visibility</p>
+          </div>
+          <span class="phase-status status-current">Complete</span>
+        </div>
+        <div class="phase-features">
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Multi-system dashboard</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Storage pool visualization</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Alert management</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Dark/light themes</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">n8n webhook integration</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Responsive design</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 2 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <div>
+            <div class="phase-number">Phase 2</div>
+            <h3 class="phase-title">Disk Health & SMART</h3>
+            <p class="phase-description">Deep visibility into disk health to predict failures</p>
+          </div>
+          <span class="phase-status status-current">Complete</span>
+        </div>
+        <div class="phase-features">
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">SMART dashboard</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Temperature trends</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Power-on hours</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Reallocated sectors</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 3 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <div>
+            <div class="phase-number">Phase 3</div>
+            <h3 class="phase-title">Replication Monitoring</h3>
+            <p class="phase-description">Ensure backups are running and data is protected</p>
+          </div>
+          <span class="phase-status status-current">Complete</span>
+        </div>
+        <div class="phase-features">
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Replication status</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Stale task detection</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Transfer metrics</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Duration tracking</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 4 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <div>
+            <div class="phase-number">Phase 4</div>
+            <h3 class="phase-title">Pool Health & ZFS</h3>
+            <p class="phase-description">Comprehensive ZFS monitoring with capacity planning</p>
+          </div>
+          <span class="phase-status status-current">Complete</span>
+        </div>
+        <div class="phase-features">
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Scrub monitoring</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Resilver tracking</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Checksum errors</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Pool state monitoring</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 5 - Auth -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <div>
+            <div class="phase-number">Phase 5</div>
+            <h3 class="phase-title">User Management & Security</h3>
+            <p class="phase-description">Authentication and role-based access control</p>
+          </div>
+          <span class="phase-status status-current">Complete</span>
+        </div>
+        <div class="phase-features">
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">JWT authentication</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">RBAC (Admin/Operator/Viewer)</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">Session timeout</span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span class="feature-text">User management</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 6 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <div>
+            <div class="phase-number">Phase 6</div>
+            <h3 class="phase-title">App & Container Monitoring</h3>
+            <p class="phase-description">Monitor Docker/Kubernetes workloads on TrueNAS SCALE</p>
+          </div>
+          <span class="phase-status status-next">Up Next</span>
+        </div>
+        <div class="phase-features">
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+            <span class="feature-text">Container status<span class="feature-priority">High</span></span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+            <span class="feature-text">Crash alerts<span class="feature-priority">High</span></span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+            <span class="feature-text">Resource usage<span class="feature-priority">Medium</span></span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+            <span class="feature-text">Log aggregation<span class="feature-priority">Medium</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phase 7 -->
+      <div class="phase-card">
+        <div class="phase-header">
+          <div>
+            <div class="phase-number">Phase 7</div>
+            <h3 class="phase-title">Enhanced Notifications</h3>
+            <p class="phase-description">Flexible alerting that reaches users where they are</p>
+          </div>
+          <span class="phase-status status-planned">Planned</span>
+        </div>
+        <div class="phase-features">
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+            <span class="feature-text">Discord webhooks<span class="feature-priority">High</span></span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+            <span class="feature-text">Generic webhooks<span class="feature-priority">High</span></span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+            <span class="feature-text">Alert digest<span class="feature-priority">Medium</span></span>
+          </div>
+          <div class="feature">
+            <svg class="feature-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+            </svg>
+            <span class="feature-text">Maintenance windows<span class="feature-priority">Medium</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Timeline Section -->
+  <section class="timeline-section" id="timeline">
+    <div class="timeline-content">
+      <div class="section-header">
+        <span class="section-label">Timeline</span>
+        <h2 class="section-title">Development progress</h2>
+        <p class="section-description">
+          Track our journey from concept to comprehensive monitoring platform.
+        </p>
+      </div>
+
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot active">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="timeline-label">Core Dashboard</div>
+          <div class="timeline-date">Completed</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot active">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="timeline-label">SMART/Disks</div>
+          <div class="timeline-date">Completed</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot active">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="timeline-label">Replication</div>
+          <div class="timeline-date">Completed</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot active">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="timeline-label">Pool Health</div>
+          <div class="timeline-date">Completed</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot active">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <div class="timeline-label">Auth & RBAC</div>
+          <div class="timeline-date">Completed</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"></circle>
+            </svg>
+          </div>
+          <div class="timeline-label">Containers</div>
+          <div class="timeline-date">Up Next</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"></circle>
+            </svg>
+          </div>
+          <div class="timeline-label">Notifications</div>
+          <div class="timeline-date">Planned</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"></circle>
+            </svg>
+          </div>
+          <div class="timeline-label">Fleet Mgmt</div>
+          <div class="timeline-date">Future</div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-value">&lt;5m</div>
+          <div class="stat-label">Time to detect failures</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">&lt;5%</div>
+          <div class="stat-label">False positive rate</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">&lt;2s</div>
+          <div class="stat-label">Dashboard load time</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value">99.9%</div>
+          <div class="stat-label">Target uptime</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features section -->
+  <section id="features">
+    <div class="section-header">
+      <span class="section-label">Why TrueNAS Mon</span>
+      <h2 class="section-title">Built for the community</h2>
+      <p class="section-description">
+        Every feature is driven by feedback from MSPs, homelabbers, and the TrueNAS community.
+      </p>
+    </div>
+
+    <div class="phases" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+      <div class="phase-card" style="padding: 1.5rem;">
+        <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem;">Open Source</h3>
+        <p class="phase-description">Free to use, modify, and contribute. Built in public with community input.</p>
+      </div>
+      <div class="phase-card" style="padding: 1.5rem;">
+        <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem;">MSP-Ready</h3>
+        <p class="phase-description">Multi-tenant design with client grouping, RBAC, and scheduled reports.</p>
+      </div>
+      <div class="phase-card" style="padding: 1.5rem;">
+        <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem;">Modern Stack</h3>
+        <p class="phase-description">React, TypeScript, and FastAPI. Clean, maintainable, and easy to extend.</p>
+      </div>
+      <div class="phase-card" style="padding: 1.5rem;">
+        <h3 style="font-size: 1.125rem; margin-bottom: 0.5rem;">Self-Hosted</h3>
+        <p class="phase-description">Your data stays with you. Deploy anywhere with Docker or bare metal.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-links">
+        <a href="https://forums.truenas.com" target="_blank">TrueNAS Forums</a>
+        <a href="https://reddit.com/r/truenas" target="_blank">Reddit</a>
+        <a href="ROADMAP.md">Markdown Roadmap</a>
+      </div>
+      <p class="footer-copyright">
+        &copy; 2026 TrueNAS Mon. Built with love for the TrueNAS community.
+      </p>
+    </div>
+  </footer>
+</body>
+</html>
