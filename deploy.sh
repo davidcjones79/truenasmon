@@ -25,7 +25,7 @@ echo "========================================"
 echo -e "${NC}"
 
 # Check if running as root
-if [ "$EUID" -eq 0 ]; then
+if [ "$(id -u)" -eq 0 ]; then
     echo -e "${YELLOW}Warning: Running as root. Consider using a regular user with sudo.${NC}"
 fi
 
@@ -53,7 +53,7 @@ command_exists() {
 
 # Function to run command with sudo if needed
 run_privileged() {
-    if [ "$EUID" -eq 0 ]; then
+    if [ "$(id -u)" -eq 0 ]; then
         "$@"
     elif command_exists sudo; then
         sudo "$@"
@@ -72,7 +72,7 @@ install_docker() {
         echo -e "${BLUE}Installing Docker...${NC}"
         curl -fsSL https://get.docker.com | run_privileged sh
         # Add user to docker group (skip if root)
-        if [ "$EUID" -ne 0 ]; then
+        if [ "$(id -u)" -ne 0 ]; then
             run_privileged usermod -aG docker $USER
         fi
         echo -e "${GREEN}Docker installed successfully.${NC}"
@@ -170,7 +170,7 @@ deploy_app() {
     echo "(This may take a few minutes on first run)"
 
     # Use privileged command if not root and not in docker group
-    if [ "$EUID" -eq 0 ] || groups | grep -q docker; then
+    if [ "$(id -u)" -eq 0 ] || groups | grep -q docker; then
         docker compose up -d --build
     else
         run_privileged docker compose up -d --build
@@ -199,7 +199,7 @@ generate_demo_data() {
         echo -e "${BLUE}Generating demo data...${NC}"
         cd "$HOME/truenasmon"
 
-        if [ "$EUID" -eq 0 ] || groups | grep -q docker; then
+        if [ "$(id -u)" -eq 0 ] || groups | grep -q docker; then
             docker compose exec -T truenas-mon python generate_mock_data.py
         else
             run_privileged docker compose exec -T truenas-mon python generate_mock_data.py
