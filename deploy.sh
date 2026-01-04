@@ -296,18 +296,57 @@ deploy_app_native() {
 
     echo -e "${BLUE}Starting TrueNAS Mon natively...${NC}"
 
-    create_systemd_service
+    # Check if systemd is available
+    if command_exists systemctl && [ "$(cat /proc/1/comm 2>/dev/null)" = "systemd" ]; then
+        create_systemd_service
 
-    # Wait for service to start
+        # Wait for service to start
+        echo "Waiting for application to be ready..."
+        sleep 5
+
+        # Check if running
+        if systemctl is-active --quiet truenasmon; then
+            echo -e "${GREEN}Application is running!${NC}"
+        else
+            echo -e "${RED}Application may not have started correctly.${NC}"
+            echo "Check logs with: journalctl -u truenasmon -f"
+        fi
+    else
+        echo -e "${YELLOW}Systemd not available - running directly...${NC}"
+        run_app_directly
+    fi
+}
+
+# Run app directly without systemd (for containers/minimal systems)
+run_app_directly() {
+    cd "$HOME/truenasmon"
+
+    # Create a simple startup script
+    cat > start.sh << 'EOF'
+#!/bin/bash
+cd "$(dirname "$0")"
+source venv/bin/activate
+source .env
+export JWT_SECRET WEBHOOK_API_KEY CORS_ORIGINS
+export DB_PATH="${DB_PATH:-$HOME/truenasmon/truenas_metrics.db}"
+exec uvicorn backend:app --host 0.0.0.0 --port 8000
+EOF
+    chmod +x start.sh
+
+    # Start in background
+    nohup ./start.sh > app.log 2>&1 &
+    APP_PID=$!
+
     echo "Waiting for application to be ready..."
-    sleep 5
+    sleep 3
 
     # Check if running
-    if systemctl is-active --quiet truenasmon; then
-        echo -e "${GREEN}Application is running!${NC}"
+    if kill -0 $APP_PID 2>/dev/null; then
+        echo -e "${GREEN}Application is running! (PID: $APP_PID)${NC}"
+        echo $APP_PID > app.pid
     else
         echo -e "${RED}Application may not have started correctly.${NC}"
-        echo "Check logs with: journalctl -u truenasmon -f"
+        echo "Check logs with: cat ~/truenasmon/app.log"
     fi
 }
 
@@ -347,10 +386,18 @@ print_summary_native() {
     echo ""
     echo -e "Useful commands:"
     echo -e "  cd ~/truenasmon"
-    echo -e "  sudo systemctl status truenasmon   # Check status"
-    echo -e "  sudo journalctl -u truenasmon -f   # View logs"
-    echo -e "  sudo systemctl restart truenasmon  # Restart app"
-    echo -e "  sudo systemctl stop truenasmon     # Stop app"
+
+    # Show appropriate commands based on how app was started
+    if [ -f "$HOME/truenasmon/app.pid" ]; then
+        echo -e "  cat app.log                        # View logs"
+        echo -e "  ./start.sh                         # Start app"
+        echo -e "  kill \$(cat app.pid)                # Stop app"
+    else
+        echo -e "  sudo systemctl status truenasmon   # Check status"
+        echo -e "  sudo journalctl -u truenasmon -f   # View logs"
+        echo -e "  sudo systemctl restart truenasmon  # Restart app"
+        echo -e "  sudo systemctl stop truenasmon     # Stop app"
+    fi
     echo ""
     echo -e "${GREEN}Enjoy TrueNAS Mon!${NC}"
 }
