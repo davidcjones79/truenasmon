@@ -322,13 +322,14 @@ run_app_directly() {
     cd "$HOME/truenasmon"
 
     # Create a simple startup script
-    cat > start.sh << 'EOF'
+    cat > start.sh << EOF
 #!/bin/bash
-cd "$(dirname "$0")"
+cd "\$(dirname "\$0")"
 source venv/bin/activate
 source .env
 export JWT_SECRET WEBHOOK_API_KEY CORS_ORIGINS
-export DB_PATH="${DB_PATH:-$HOME/truenasmon/truenas_metrics.db}"
+# Override DB_PATH for native install (not Docker path)
+export DB_PATH="$HOME/truenasmon/truenas_metrics.db"
 exec uvicorn backend:app --host 0.0.0.0 --port 8000
 EOF
     chmod +x start.sh
