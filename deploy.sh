@@ -220,16 +220,14 @@ generate_demo_data() {
 # NATIVE INSTALLATION FUNCTIONS
 # ==========================================
 
-# Install Python and Node.js for native deployment
+# Install Python for native deployment (Node.js not needed - frontend is pre-built)
 install_native_deps() {
     echo -e "${BLUE}Installing system dependencies...${NC}"
     run_privileged apt-get update
-    run_privileged apt-get install -y python3 python3-pip python3-venv nodejs npm git curl openssl
+    run_privileged apt-get install -y python3 python3-pip python3-venv git curl openssl
 
-    # Check versions
+    # Check version
     echo -e "${GREEN}Python: $(python3 --version)${NC}"
-    echo -e "${GREEN}Node: $(node --version)${NC}"
-    echo -e "${GREEN}npm: $(npm --version)${NC}"
 }
 
 # Setup Python virtual environment and install dependencies
@@ -420,27 +418,23 @@ main_docker() {
 
 # Main installation flow for Native
 main_native() {
-    echo -e "${BLUE}Step 1/6: Installing system dependencies...${NC}"
+    echo -e "${BLUE}Step 1/5: Installing system dependencies...${NC}"
     install_native_deps
 
     echo ""
-    echo -e "${BLUE}Step 2/6: Setting up repository...${NC}"
+    echo -e "${BLUE}Step 2/5: Setting up repository...${NC}"
     setup_repo
 
     echo ""
-    echo -e "${BLUE}Step 3/6: Configuring environment...${NC}"
+    echo -e "${BLUE}Step 3/5: Configuring environment...${NC}"
     setup_env
 
     echo ""
-    echo -e "${BLUE}Step 4/6: Setting up Python environment...${NC}"
+    echo -e "${BLUE}Step 4/5: Setting up Python environment...${NC}"
     setup_python_env
 
     echo ""
-    echo -e "${BLUE}Step 5/6: Building frontend...${NC}"
-    build_frontend
-
-    echo ""
-    echo -e "${BLUE}Step 6/6: Deploying application...${NC}"
+    echo -e "${BLUE}Step 5/5: Deploying application...${NC}"
     deploy_app_native
 
     echo ""
