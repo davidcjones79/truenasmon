@@ -51,6 +51,18 @@ command_exists() {
     command -v "$1" >/dev/null 2>&1
 }
 
+# Function to run command with sudo if needed
+run_privileged() {
+    if [ "$EUID" -eq 0 ]; then
+        "$@"
+    elif command_exists sudo; then
+        sudo "$@"
+    else
+        echo -e "${RED}Error: Need root privileges. Run as root or install sudo.${NC}"
+        exit 1
+    fi
+}
+
 # Install Docker if not present
 install_docker() {
     if command_exists docker; then
@@ -58,8 +70,11 @@ install_docker() {
         docker --version
     else
         echo -e "${BLUE}Installing Docker...${NC}"
-        curl -fsSL https://get.docker.com | sudo sh
-        sudo usermod -aG docker $USER
+        curl -fsSL https://get.docker.com | run_privileged sh
+        # Add user to docker group (skip if root)
+        if [ "$EUID" -ne 0 ]; then
+            run_privileged usermod -aG docker $USER
+        fi
         echo -e "${GREEN}Docker installed successfully.${NC}"
     fi
 }
@@ -71,8 +86,8 @@ install_docker_compose() {
         docker compose version
     else
         echo -e "${BLUE}Installing Docker Compose...${NC}"
-        sudo apt-get update
-        sudo apt-get install -y docker-compose-plugin
+        run_privileged apt-get update
+        run_privileged apt-get install -y docker-compose-plugin
         echo -e "${GREEN}Docker Compose installed successfully.${NC}"
     fi
 }
@@ -154,11 +169,11 @@ deploy_app() {
     echo -e "${BLUE}Building and starting TrueNAS Mon...${NC}"
     echo "(This may take a few minutes on first run)"
 
-    # Use sudo if user not in docker group yet
-    if groups | grep -q docker; then
+    # Use privileged command if not root and not in docker group
+    if [ "$EUID" -eq 0 ] || groups | grep -q docker; then
         docker compose up -d --build
     else
-        sudo docker compose up -d --build
+        run_privileged docker compose up -d --build
     fi
 
     echo -e "${GREEN}TrueNAS Mon is starting...${NC}"
@@ -184,10 +199,10 @@ generate_demo_data() {
         echo -e "${BLUE}Generating demo data...${NC}"
         cd "$HOME/truenasmon"
 
-        if groups | grep -q docker; then
+        if [ "$EUID" -eq 0 ] || groups | grep -q docker; then
             docker compose exec -T truenas-mon python generate_mock_data.py
         else
-            sudo docker compose exec -T truenas-mon python generate_mock_data.py
+            run_privileged docker compose exec -T truenas-mon python generate_mock_data.py
         fi
 
         echo -e "${GREEN}Demo data generated!${NC}"
