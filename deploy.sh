@@ -8,6 +8,10 @@
 #   OR
 #   wget -qO- https://raw.githubusercontent.com/davidcjones79/truenasmon/main/deploy.sh | bash
 #
+# Options:
+#   DEPLOY_MODE=native  - Install directly without Docker
+#   DEPLOY_MODE=docker  - Install with Docker (default)
+#
 
 set -e
 
@@ -17,6 +21,9 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# Default to docker mode, can be overridden
+DEPLOY_MODE="${DEPLOY_MODE:-}"
 
 echo -e "${BLUE}"
 echo "========================================"
@@ -209,7 +216,152 @@ generate_demo_data() {
     fi
 }
 
-# Print summary
+# ==========================================
+# NATIVE INSTALLATION FUNCTIONS
+# ==========================================
+
+# Install Python and Node.js for native deployment
+install_native_deps() {
+    echo -e "${BLUE}Installing system dependencies...${NC}"
+    run_privileged apt-get update
+    run_privileged apt-get install -y python3 python3-pip python3-venv nodejs npm git curl openssl
+
+    # Check versions
+    echo -e "${GREEN}Python: $(python3 --version)${NC}"
+    echo -e "${GREEN}Node: $(node --version)${NC}"
+    echo -e "${GREEN}npm: $(npm --version)${NC}"
+}
+
+# Setup Python virtual environment and install dependencies
+setup_python_env() {
+    cd "$HOME/truenasmon"
+
+    echo -e "${BLUE}Setting up Python virtual environment...${NC}"
+    python3 -m venv venv
+    source venv/bin/activate
+
+    pip install --upgrade pip
+    pip install -r requirements.txt
+
+    echo -e "${GREEN}Python dependencies installed.${NC}"
+}
+
+# Build frontend
+build_frontend() {
+    cd "$HOME/truenasmon/frontend"
+
+    echo -e "${BLUE}Building frontend...${NC}"
+    npm install
+    npm run build
+
+    echo -e "${GREEN}Frontend built successfully.${NC}"
+}
+
+# Create systemd service for native deployment
+create_systemd_service() {
+    echo -e "${BLUE}Creating systemd service...${NC}"
+
+    # Load environment variables
+    source "$HOME/truenasmon/.env"
+
+    run_privileged tee /etc/systemd/system/truenasmon.service > /dev/null << EOF
+[Unit]
+Description=TrueNAS Mon Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=$(whoami)
+WorkingDirectory=$HOME/truenasmon
+Environment="JWT_SECRET=$JWT_SECRET"
+Environment="WEBHOOK_API_KEY=$WEBHOOK_API_KEY"
+Environment="CORS_ORIGINS=$CORS_ORIGINS"
+Environment="DB_PATH=$HOME/truenasmon/truenas_metrics.db"
+ExecStart=$HOME/truenasmon/venv/bin/uvicorn backend:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    run_privileged systemctl daemon-reload
+    run_privileged systemctl enable truenasmon
+    run_privileged systemctl start truenasmon
+
+    echo -e "${GREEN}Systemd service created and started.${NC}"
+}
+
+# Deploy app natively (without Docker)
+deploy_app_native() {
+    cd "$HOME/truenasmon"
+
+    echo -e "${BLUE}Starting TrueNAS Mon natively...${NC}"
+
+    create_systemd_service
+
+    # Wait for service to start
+    echo "Waiting for application to be ready..."
+    sleep 5
+
+    # Check if running
+    if systemctl is-active --quiet truenasmon; then
+        echo -e "${GREEN}Application is running!${NC}"
+    else
+        echo -e "${RED}Application may not have started correctly.${NC}"
+        echo "Check logs with: journalctl -u truenasmon -f"
+    fi
+}
+
+# Generate demo data for native install
+generate_demo_data_native() {
+    read -p "Generate demo data? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${BLUE}Generating demo data...${NC}"
+        cd "$HOME/truenasmon"
+        source venv/bin/activate
+        python generate_mock_data.py
+        echo -e "${GREEN}Demo data generated!${NC}"
+    fi
+}
+
+# Print summary for native install
+print_summary_native() {
+    SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
+
+    echo ""
+    echo -e "${GREEN}========================================"
+    echo "   Deployment Complete!"
+    echo "========================================${NC}"
+    echo ""
+    echo -e "Access the dashboard at:"
+    echo -e "  ${BLUE}http://$SERVER_IP:8000${NC}"
+    echo ""
+    echo -e "Default login:"
+    echo -e "  Email:    ${YELLOW}admin@truenas-mon.local${NC}"
+    echo -e "  Password: ${YELLOW}admin${NC}"
+    echo -e "  ${RED}(You will be required to change this)${NC}"
+    echo ""
+    echo -e "Webhook endpoint for n8n:"
+    echo -e "  ${BLUE}http://$SERVER_IP:8000/webhook/metrics${NC}"
+    echo -e "  Header: ${YELLOW}X-API-Key: <your-webhook-api-key>${NC}"
+    echo ""
+    echo -e "Useful commands:"
+    echo -e "  cd ~/truenasmon"
+    echo -e "  sudo systemctl status truenasmon   # Check status"
+    echo -e "  sudo journalctl -u truenasmon -f   # View logs"
+    echo -e "  sudo systemctl restart truenasmon  # Restart app"
+    echo -e "  sudo systemctl stop truenasmon     # Stop app"
+    echo ""
+    echo -e "${GREEN}Enjoy TrueNAS Mon!${NC}"
+}
+
+# ==========================================
+# DOCKER INSTALLATION FUNCTIONS (EXISTING)
+# ==========================================
+
+# Print summary for Docker install
 print_summary() {
     SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || hostname -I | awk '{print $1}')
 
@@ -239,8 +391,8 @@ print_summary() {
     echo -e "${GREEN}Enjoy TrueNAS Mon!${NC}"
 }
 
-# Main installation flow
-main() {
+# Main installation flow for Docker
+main_docker() {
     echo -e "${BLUE}Step 1/5: Installing Docker...${NC}"
     install_docker
 
@@ -266,5 +418,72 @@ main() {
     print_summary
 }
 
+# Main installation flow for Native
+main_native() {
+    echo -e "${BLUE}Step 1/6: Installing system dependencies...${NC}"
+    install_native_deps
+
+    echo ""
+    echo -e "${BLUE}Step 2/6: Setting up repository...${NC}"
+    setup_repo
+
+    echo ""
+    echo -e "${BLUE}Step 3/6: Configuring environment...${NC}"
+    setup_env
+
+    echo ""
+    echo -e "${BLUE}Step 4/6: Setting up Python environment...${NC}"
+    setup_python_env
+
+    echo ""
+    echo -e "${BLUE}Step 5/6: Building frontend...${NC}"
+    build_frontend
+
+    echo ""
+    echo -e "${BLUE}Step 6/6: Deploying application...${NC}"
+    deploy_app_native
+
+    echo ""
+    generate_demo_data_native
+
+    print_summary_native
+}
+
+# Ask user for deployment mode
+select_deploy_mode() {
+    if [ -n "$DEPLOY_MODE" ]; then
+        # Mode was set via environment variable
+        return
+    fi
+
+    echo -e "Select deployment mode:"
+    echo -e "  ${BLUE}1)${NC} Docker (recommended for production)"
+    echo -e "  ${BLUE}2)${NC} Native (no Docker required)"
+    echo ""
+    read -p "Enter choice [1-2]: " choice
+
+    case $choice in
+        1) DEPLOY_MODE="docker" ;;
+        2) DEPLOY_MODE="native" ;;
+        *)
+            echo -e "${YELLOW}Invalid choice. Defaulting to Docker.${NC}"
+            DEPLOY_MODE="docker"
+            ;;
+    esac
+}
+
 # Run main function
-main
+select_deploy_mode
+
+case $DEPLOY_MODE in
+    native)
+        echo -e "${GREEN}Installing in NATIVE mode (no Docker)${NC}"
+        echo ""
+        main_native
+        ;;
+    *)
+        echo -e "${GREEN}Installing in DOCKER mode${NC}"
+        echo ""
+        main_docker
+        ;;
+esac
