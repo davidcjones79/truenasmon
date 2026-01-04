@@ -296,8 +296,8 @@ deploy_app_native() {
 
     echo -e "${BLUE}Starting TrueNAS Mon natively...${NC}"
 
-    # Check if systemd is available
-    if command_exists systemctl && [ "$(cat /proc/1/comm 2>/dev/null)" = "systemd" ]; then
+    # Check if systemd is available and working
+    if command_exists systemctl && systemctl --version >/dev/null 2>&1; then
         create_systemd_service
 
         # Wait for service to start
