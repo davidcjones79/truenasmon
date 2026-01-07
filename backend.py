@@ -18,7 +18,8 @@ import os
 import secrets
 
 # Auth imports
-from jose import JWTError, jwt
+import jwt
+from jwt.exceptions import InvalidTokenError
 import bcrypt
 
 # Rate limiting
@@ -269,7 +270,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-    except JWTError:
+    except InvalidTokenError:
         raise credentials_exception
 
     user = get_user_by_email(email)
