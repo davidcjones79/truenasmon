@@ -6,8 +6,14 @@
 # Usage:
 #   curl -fsSL https://raw.githubusercontent.com/davidcjones79/truenasmon/main/deploy.sh | bash
 #
+# Options:
+#   AUTO_YES=true  - Skip all prompts (auto-answer yes)
+#
 
 set -e
+
+# Non-interactive mode (set AUTO_YES=true to skip prompts)
+AUTO_YES=${AUTO_YES:-false}
 
 # Colors for output
 RED='\033[0;31m'
@@ -68,8 +74,12 @@ setup_repo() {
 
     if [ -d "$INSTALL_DIR" ]; then
         echo -e "${YELLOW}Directory $INSTALL_DIR already exists.${NC}"
-        read -p "Update existing installation? (y/n) " -n 1 -r
-        echo
+        if [ "$AUTO_YES" = true ]; then
+            REPLY="y"
+        else
+            read -p "Update existing installation? (y/n) " -n 1 -r
+            echo
+        fi
         if [[ $REPLY =~ ^[Yy]$ ]]; then
             cd "$INSTALL_DIR"
             git pull
@@ -92,11 +102,22 @@ setup_env() {
 
     if [ -f .env ]; then
         echo -e "${YELLOW}.env file already exists.${NC}"
-        read -p "Overwrite with new secrets? (y/n) " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            echo "Keeping existing .env file."
+        if [ "$AUTO_YES" = true ]; then
+            echo "Keeping existing .env file (AUTO_YES mode)."
+            # Source existing .env to get WEBHOOK_API_KEY for demo data
+            source .env
+            export WEBHOOK_API_KEY
             return
+        else
+            read -p "Overwrite with new secrets? (y/n) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo "Keeping existing .env file."
+                # Source existing .env to get WEBHOOK_API_KEY for demo data
+                source .env
+                export WEBHOOK_API_KEY
+                return
+            fi
         fi
     fi
 
@@ -126,6 +147,9 @@ CORS_ORIGINS=http://localhost:8000,http://$SERVER_IP:8000
 # Database path (inside container)
 DB_PATH=/data/truenas_metrics.db
 EOF
+
+    # Export for use in generate_demo_data
+    export WEBHOOK_API_KEY
 
     echo -e "${GREEN}Environment configured.${NC}"
     echo -e "${YELLOW}Webhook API Key: $WEBHOOK_API_KEY${NC}"
@@ -158,12 +182,17 @@ deploy_app() {
 
 # Generate demo data
 generate_demo_data() {
-    read -p "Generate demo data? (y/n) " -n 1 -r
-    echo
+    if [ "$AUTO_YES" = true ]; then
+        REPLY="y"
+    else
+        read -p "Generate demo data? (y/n) " -n 1 -r
+        echo
+    fi
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         echo -e "${BLUE}Generating demo data...${NC}"
         cd "$HOME/truenasmon"
-        docker compose exec -T truenas-mon python generate_mock_data.py
+        # Pass WEBHOOK_API_KEY to the container for authentication
+        docker compose exec -T -e WEBHOOK_API_KEY="${WEBHOOK_API_KEY}" truenas-mon python generate_mock_data.py
         echo -e "${GREEN}Demo data generated!${NC}"
     fi
 }

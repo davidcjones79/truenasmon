@@ -7,8 +7,10 @@ import requests
 import random
 from datetime import datetime, timedelta
 import time
+import os
 
-API_URL = "http://localhost:8000"
+API_URL = os.environ.get("API_URL", "http://localhost:8000")
+WEBHOOK_API_KEY = os.environ.get("WEBHOOK_API_KEY", "")
 
 # Sample MSP client data
 SAMPLE_SYSTEMS = [
@@ -278,9 +280,12 @@ def send_metrics(system, metrics, alerts=None):
         "metrics": metrics,
         "alerts": alerts or []
     }
-    
+    headers = {}
+    if WEBHOOK_API_KEY:
+        headers["X-API-Key"] = WEBHOOK_API_KEY
+
     try:
-        resp = requests.post(f"{API_URL}/webhook/metrics", json=payload, timeout=5)
+        resp = requests.post(f"{API_URL}/webhook/metrics", json=payload, headers=headers, timeout=5)
         resp.raise_for_status()
         return True
     except Exception as e:

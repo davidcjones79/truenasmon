@@ -55,7 +55,8 @@ To populate the dashboard with sample TrueNAS systems:
 
 ```bash
 cd ~/truenasmon
-docker compose exec truenas-mon python generate_mock_data.py
+source .env
+docker compose exec -e WEBHOOK_API_KEY="${WEBHOOK_API_KEY}" truenas-mon python generate_mock_data.py
 ```
 
 This creates 5 sample systems with 48 hours of historical metrics.
