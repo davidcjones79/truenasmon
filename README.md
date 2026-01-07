@@ -23,7 +23,7 @@ A modern fleet monitoring dashboard for TrueNAS systems, built for MSPs and home
 - **Card & List Views** - Toggle between view modes for alerts
 
 ### User Experience
-- **Dark/Light Mode** - System-aware theme with manual toggle
+- **Dark/Light Mode** - Light mode default with manual toggle
 - **Customizable Accent Colors** - Personalize your dashboard
 - **Collapsible Sidebar** - More screen space when you need it
 - **System Favorites** - Pin important systems for quick access
@@ -87,37 +87,25 @@ docker compose up -d
 open http://localhost:8000
 ```
 
-### Option 3: Manual Installation
+### Local Development
 
-#### Prerequisites
-- Python 3.10+
-- Node.js 18+
-- npm or yarn
-
-#### Backend Setup
+For development, you'll need Python 3.10+ and Node.js 18+.
 
 ```bash
-# Create virtual environment
+# Backend
 python3 -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
+source venv/bin/activate
 pip install -r requirements.txt
+export JWT_SECRET="dev-secret-key"
+uvicorn backend:app --host 0.0.0.0 --port 8000 --reload
 
-# Set environment variables
-export JWT_SECRET="your-secret-key-here"
-
-# Start the API
-uvicorn backend:app --host 0.0.0.0 --port 8000
-```
-
-#### Frontend Setup
-
-```bash
+# Frontend (in another terminal)
 cd frontend
 npm install
 npm run dev
 ```
+
+The frontend dev server runs on port 5173 and proxies API requests to port 8000.
 
 ### Generate Demo Data
 
