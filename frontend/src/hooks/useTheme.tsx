@@ -42,11 +42,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           // Fall through to default
         }
       }
-      // Check system preference for mode
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return { ...defaultTheme, mode: 'dark' };
-      }
     }
+    // Always default to light mode
     return defaultTheme;
   });
 
